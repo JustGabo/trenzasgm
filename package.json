@@ -9,8 +9,14 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@sanity/image-url": "^2.0.3",
+    "@supabase/supabase-js": "^2.97.0",
+    "date-fns": "^4.1.0",
+    "lucide-react": "^0.575.0",
     "next": "16.1.6",
+    "next-sanity": "^12.1.0",
     "react": "19.2.3",
+    "react-day-picker": "^9.13.2",
     "react-dom": "19.2.3"
   },
   "devDependencies": {
