@@ -42,6 +42,7 @@ type Appointment = {
   time_slot: string;
   created_at: string;
   status?: string;
+  phone_number: string;
 };
 
 export default function AdminCitasPage() {
@@ -56,7 +57,7 @@ export default function AdminCitasPage() {
 
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
-  const [email, setEmail] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
   const [clientName, setClientName] = useState("");
   const [takenSlots, setTakenSlots] = useState<string[]>([]);
   const [loadingSlots, setLoadingSlots] = useState(false);
@@ -66,15 +67,15 @@ export default function AdminCitasPage() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
-  const copyEmail = (email: string, id: string) => {
+  const copyPhoneNumber = (propPhoneNumber: string, id: string) => {
     const onSuccess = () => {
       setCopiedId(id);
       setTimeout(() => setCopiedId(null), 2000);
     };
     if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
-      navigator.clipboard.writeText(email).then(onSuccess).catch(() => fallbackCopy(email, onSuccess));
+      navigator.clipboard.writeText(propPhoneNumber).then(onSuccess).catch(() => fallbackCopy(propPhoneNumber, onSuccess));
     } else {
-      fallbackCopy(email, onSuccess);
+      fallbackCopy(propPhoneNumber, onSuccess);
     }
   };
 
@@ -115,7 +116,7 @@ export default function AdminCitasPage() {
       const supabase = createClient();
       const { data } = await supabase
         .from("appointments")
-        .select("id, email, client_name, date, time_slot, created_at, status")
+        .select("id, email, client_name, date, time_slot, created_at, status, phone_number")
         .gte("date", start)
         .lte("date", end)
         .order("date", { ascending: true })
@@ -131,18 +132,18 @@ export default function AdminCitasPage() {
     setPage(1);
   }, [month]);
 
-  useEffect(() => {
-    const supabase = createClient();
-    supabase
-      .from("availability_blocks")
-      .select("date")
-      .is("time_slot", null)
-      .gte("date", fromDate)
-      .lte("date", format(maxDate, "yyyy-MM-dd"))
-      .then(({ data }) => {
-        setBlockedDays((data ?? []).map((r) => new Date(r.date)));
-      });
-  }, [fromDate, maxDate]);
+  // useEffect(() => {
+  //   const supabase = createClient();
+  //   supabase
+  //     .from("availability_blocks")
+  //     .select("date")
+  //     .is("time_slot", null)
+  //     .gte("date", fromDate)
+  //     .lte("date", format(maxDate, "yyyy-MM-dd"))
+  //     .then(({ data }) => {
+  //       setBlockedDays((data ?? []).map((r) => new Date(r.date)));
+  //     });
+  // }, [fromDate, maxDate]);
 
   const fetchTakenSlotsForDate = async (date: Date) => {
     const dateStr = format(date, "yyyy-MM-dd");
@@ -222,19 +223,19 @@ export default function AdminCitasPage() {
 
   const handleAddAppointment = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedDate || !selectedTime || !email.trim()) return;
+    if (!selectedDate || !selectedTime || !phoneNumber.trim()) return;
     setSubmittingNew(true);
     try {
       const supabase = createClient();
       await supabase.from("appointments").insert({
         date: format(selectedDate, "yyyy-MM-dd"),
         time_slot: selectedTime,
-        email: email.trim(),
+        phone_number: phoneNumber.trim(),
         client_name: clientName.trim() || null,
       });
       setSelectedDate(undefined);
       setSelectedTime(null);
-      setEmail("");
+      setPhoneNumber("");
       setClientName("");
       setTakenSlots([]);
       loadAppointments();
@@ -365,17 +366,17 @@ export default function AdminCitasPage() {
               </div>
               <div>
                 <label
-                  htmlFor="new-cita-email"
+                  htmlFor="phone-number"
                   className="block text-sm font-medium text-neutral-700 mb-1.5"
                 >
-                  Correo
+                  Número
                 </label>
                 <input
-                  id="new-cita-email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="cliente@ejemplo.com"
+                  id="phone-number"
+                  type="text"
+                  value={phoneNumber}
+                  onChange={(e) => setPhoneNumber(e.target.value)}
+                  placeholder="Introduce tu número"
                   className="w-full max-w-xs px-3 py-2.5 text-base md:text-sm border border-neutral-200 rounded-lg text-neutral-800 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-200 focus:border-neutral-300"
                   required
                 />
@@ -400,7 +401,7 @@ export default function AdminCitasPage() {
                 <button
                   type="submit"
                   disabled={submittingNew || !selectedDate || !selectedTime ||
-                    !email.trim()}
+                    !phoneNumber.trim()}
                   className="px-5 py-3 md:py-2.5 min-h-[44px] bg-neutral-800 text-white rounded-lg font-medium hover:bg-neutral-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors touch-manipulation"
                 >
                   {submittingNew ? "Guardando…" : "Añadir cita"}
@@ -555,20 +556,20 @@ export default function AdminCitasPage() {
                       >
                         <div className="flex flex-col gap-1">
                           <p className="text-[13px] font-medium text-neutral-500">
-                            Correo
+                            Número
                           </p>
                           <div className="flex relative items-center gap-2 flex-wrap">
                             <p className="text-sm text-neutral-700 break-all flex-1 min-w-0">
-                              {a.email}
+                              {a.phone_number}
                             </p>
                             <button
                               type="button"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                copyEmail(a.email, a.id);
+                                copyPhoneNumber(a.phone_number, a.id);
                               }}
                               className="shrink-0 inline-flex absolute right-0 items-center gap-1 px-2.5 py-2 rounded-lg border border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-50 text-xs font-medium touch-manipulation min-h-[36px]"
-                              aria-label="Copiar correo"
+                              aria-label="Copiar número"
                             >
                               {copiedId === a.id ? (
                                 <>Copiado</>
@@ -632,7 +633,7 @@ export default function AdminCitasPage() {
                     <th className="px-3 md:px-4 py-3 font-medium text-neutral-700">Fecha</th>
                     <th className="px-3 md:px-4 py-3 font-medium text-neutral-700">Hora</th>
                     <th className="px-3 md:px-4 py-3 font-medium text-neutral-700">Cliente</th>
-                    <th className="px-3 md:px-4 py-3 font-medium text-neutral-700">Correo</th>
+                    <th className="px-3 md:px-4 py-3 font-medium text-neutral-700">Número</th>
                     <th className="px-3 md:px-4 py-3 font-medium text-neutral-700 text-right">Acciones</th>
                   </tr>
                 </thead>
@@ -649,13 +650,13 @@ export default function AdminCitasPage() {
                       <td className="px-3 md:px-4 py-3">{a.client_name ?? "—"}</td>
                       <td className="px-3 md:px-4 py-3">
                         <div className="flex items-center gap-2 max-w-[180px]">
-                          <span className="truncate">{a.email}</span>
+                          <span className="truncate">{a.phone_number}</span>
                           <button
                             type="button"
-                            onClick={() => copyEmail(a.email, a.id)}
+                            onClick={() => copyPhoneNumber(a.phone_number, a.id)}
                             className="shrink-0 p-1.5 rounded text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 touch-manipulation min-h-[28px] min-w-[28px] flex items-center justify-center"
-                            aria-label="Copiar correo"
-                            title="Copiar correo"
+                            aria-label="Copiar Número"
+                            title="Copiar Número"
                           >
                             {copiedId === a.id ? <span className="text-xs text-green-600 font-medium">Copiado</span> : <Copy className="w-3.5 h-3.5" />}
                           </button>

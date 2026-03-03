@@ -30,7 +30,7 @@ const TIME_SLOTS = generateTimeSlots();
 export default function Appointment() {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
-  const [email, setEmail] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
   const [name, setName] = useState("");
   const [takenSlots, setTakenSlots] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
@@ -101,7 +101,7 @@ export default function Appointment() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedDate || !selectedTime || !email.trim()) {
+    if (!selectedDate || !selectedTime || !phoneNumber.trim()) {
       setMessage({ type: "error", text: "Selecciona fecha, hora e introduce tu correo." });
       return;
     }
@@ -112,14 +112,14 @@ export default function Appointment() {
       const { error } = await supabase.from("appointments").insert({
         date: format(selectedDate, "yyyy-MM-dd"),
         time_slot: selectedTime,
-        email: email.trim(),
+        phone_number: phoneNumber.trim(),
         client_name: name.trim() || null,
       });
       if (error) throw error;
 
       const humanDate = format(selectedDate, "d 'de' MMMM yyyy", { locale: es });
       const text =
-        `Hola, acabo de reservar una cita para el ${humanDate} a las ${selectedTime}. Mi correo es ${email.trim()}${
+        `Hola, acabo de reservar una cita para el ${humanDate} a las ${selectedTime}. Mi número es ${phoneNumber.trim()}${
           name.trim() ? ` y mi nombre es ${name.trim()}` : ""
         }.`;
       setInstagramMessage(text);
@@ -130,7 +130,7 @@ export default function Appointment() {
       });
       setSelectedDate(undefined);
       setSelectedTime(null);
-      setEmail("");
+      setPhoneNumber("");
       setName("");
       setTakenSlots([]);
     } catch (err) {
@@ -189,13 +189,13 @@ export default function Appointment() {
 
             <div className="flex flex-col">
               <label className="text-sm font-medium text-neutral-600 mb-2">
-                Correo electrónico
+                Número telefónico
               </label>
               <input
-                type="email"
-                placeholder="Introduce tu correo"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                type="text"
+                placeholder="Introduce tu número"
+                value={phoneNumber}
+                onChange={(e) => setPhoneNumber(e.target.value)}
                 className="w-full min-h-11 px-4 py-3 rounded-xl border border-neutral-200 bg-white text-neutral-900 text-base placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent mb-4"
               />
               <label className="text-sm font-medium text-neutral-600 mb-2">Nombre (opcional)</label>
@@ -246,7 +246,7 @@ export default function Appointment() {
           <div className="px-4 sm:px-6 md:px-8 pb-6 md:pb-8 pt-2">
             <button
               type="submit"
-              disabled={loading || !selectedDate || !selectedTime || !email.trim()}
+              disabled={loading || !selectedDate || !selectedTime || !phoneNumber.trim()}
               className="w-full min-h-12 py-3 sm:py-4 rounded-full bg-accent text-white font-semibold text-base sm:text-lg hover:bg-accent/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors touch-manipulation"
             >
               {loading ? "Reservando…" : "Reservar cita"}
